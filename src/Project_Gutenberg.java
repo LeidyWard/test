@@ -45,14 +45,12 @@ public class Project_Gutenberg {
 		
 		while(scan.hasNext()) {
 			String str = scan.next();
-			//System.out.println(str);
 			list.add(str);
 		}
 		Iterator j = list.iterator();
 		while(j.hasNext()) {
 			i++;
 			words.put((String)j.next(), i);
-			//System.out.println(words);
 		}
 		Set<Object> uniqueWords = new HashSet<Object>(words.values());
 		
@@ -75,12 +73,12 @@ public class Project_Gutenberg {
 				for(String w : words) {
 					if(w.length() == 0)
 						continue;
-					Integer occur = countWord.get(w);
-					if(occur == null)
-						occur = 1;
+					Integer counter = countWord.get(w);
+					if(counter == null)
+						counter = 1;
 					else
-						occur++;
-					countWord.put(w, occur);
+						counter++;					//keep track of/update frequency of word
+					countWord.put(w, counter);
 				}
 			}
 		}
@@ -106,15 +104,157 @@ public class Project_Gutenberg {
 		}
 		return null;
 	}
-	/*String get20MostInterestingFrequentWords(){
-		return "";
+	
+	static String get20MostInterestingFrequentWords() throws FileNotFoundException{
+		File file = new File("src/CommonWords");
+		ArrayList<String> list = new ArrayList();
+		HashMap<Integer, String> words = new HashMap<Integer, String>();
+		Scanner scan = new Scanner(file);
+		int i =0;
+		
+		while(scan.hasNext()) {
+			String str = scan.next();
+			list.add(str);
+		}
+		Iterator<String> j = list.iterator();
+		while(j.hasNext()) {
+			i++;
+			words.put(i, (String)j.next());
+		}
+		
+		System.out.println("\n\nThe 20 most interesting frequent words:\n");
+		
+		LinkedHashMap<String, Integer> countWord = new LinkedHashMap<String, Integer>();
+		try {
+			BufferedReader read = new BufferedReader(new FileReader("src/Book.txt"));
+			String s;
+			
+			while((s = read.readLine()) != null) {
+				s = s.toLowerCase();
+				String[] word = s.split("\\s+");		//split line at whitespace
+				
+				for(String w : word) {
+					if(w.length() == 0)
+						continue;
+					Integer counter = countWord.get(w);
+					if(counter == null)
+						counter = 1;
+					else
+						counter++;					//keep track of/update frequency of word
+					if(words.containsValue(w))
+						continue;
+					else
+						countWord.put(w, counter);
+				}
+			}
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		
+		ArrayList<Integer> val = new ArrayList<Integer>();
+		val.addAll(countWord.values());
+		
+		Collections.sort(val, Collections.reverseOrder());
+		
+		int last = -1;
+		for(Integer it : val.subList(0, 19)) {
+			if(last == it)		//avoids duplicates
+				continue;
+			last = it;
+	
+			for(String str : countWord.keySet()) {
+				if(countWord.get(str) == it)		//it = number of occurrences
+					System.out.println(str + " " + it); 
+			}
+		}
+		return null;
 	}
-	String get20LeastFrequentWords(){
-		return "";
+	
+	static String get20LeastFrequentWords(){
+
+		System.out.println("\n\nThe 20 least frequent words:\n");
+		
+		LinkedHashMap<String, Integer> countWord = new LinkedHashMap<String, Integer>();
+		try {
+			BufferedReader read = new BufferedReader(new FileReader("src/Book.txt"));
+			String s;
+			
+			while((s = read.readLine()) != null) {
+				s = s.toLowerCase();
+				String[] words = s.split("[\\s\\p{Punct}]+");	//split line at whitespace and punctuation marks
+				
+				for(String w : words) {
+					if(w.length() == 0)
+						continue;
+					Integer counter = countWord.get(w);
+					if(counter == null)
+						counter = 1;
+					else
+						counter++;					//keep track of/update frequency of word
+					countWord.put(w, counter);
+				}
+			}
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		
+		ArrayList<Integer> val = new ArrayList<Integer>();
+		val.addAll(countWord.values());
+		
+		Collections.sort(val, Collections.reverseOrder());
+		Collections.reverse(val);
+		
+		int last = -1, limit = 0;
+		for(Integer i : val.subList(0, 19)) {
+			if(last == i)		//avoids duplicates
+				continue;
+			last = i;
+	
+			for(String str : countWord.keySet()) {
+				if(countWord.get(str) == i && limit < 21) {		//i = number of occurrences
+					if(str.matches(".*\\d.*"))
+						continue;
+					System.out.println(str + " " + i);
+					limit++;
+				}
+			}
+		}
+		return null;
 	}
-	String getFrequencyOfWord(){
-		return "";
+	static List<Integer> getFrequencyOfWord(String str) throws FileNotFoundException{
+		File file = new File("src/Book.txt");
+		//ArrayList<String> list = new ArrayList<String>();			//10 chapters in the book
+		ArrayList<Integer> result = new ArrayList<Integer>(11);
+		Scanner scan = new Scanner(file);
+		int count = 0;
+
+		System.out.println("\n\nThe frequency of the word  - " + str + " -  per chapter:\n");
+		
+		int chap = 0;
+		while(scan.hasNext() && chap < 11) {
+			String s = scan.next();
+			if(s.toLowerCase() == "chapter") {
+				result.add(count);
+				System.out.println(count);
+				chap++;
+				count = 0;
+			}
+			if(s.toLowerCase() != "chapter") {
+				if(s.toLowerCase() == str) {
+					System.out.println(s.toLowerCase());
+					count++;
+					System.out.println(count);
+				}
+			}
+		}
+		System.out.println(result.size());
+		scan.close();
+		return result.subList(0, 0);
 	}
+	
+	/*
 	String getChapterQuoteAppears(){
 		return "";
 	}
@@ -132,7 +272,9 @@ public class Project_Gutenberg {
 		Project_Gutenberg.getTotalNumberOfWords();
 		Project_Gutenberg.getTotalUniqueWords();
 		Project_Gutenberg.get20MostFrequentWords();
-
+		Project_Gutenberg.get20MostInterestingFrequentWords();
+		Project_Gutenberg.get20LeastFrequentWords();
+		Project_Gutenberg.getFrequencyOfWord("the");
 	}
 
 }
